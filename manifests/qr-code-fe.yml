@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: qr-dp-fe
+  namespace: qr-code
+  labels:
+    app: qr-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qr-fe
+  template:
+    metadata:
+      labels:
+        app: qr-fe
+    spec:
+      containers:
+      - name: qr-frontend
+        image: dhruvpatil56/qr-frontend:latest
+        ports:
+          - containerPort: 8000
+ 

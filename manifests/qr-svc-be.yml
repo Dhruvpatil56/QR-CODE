@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: qr-svc-be
+  namespace: qr-code
+spec:
+  type: ClusterIP
+  selector:
+    app: qr-be
+  ports:
+    - protocol : TCP
+      targetPort: 8000
+      port: 8000
+      name: tcp-be  

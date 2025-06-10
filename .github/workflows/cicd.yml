@@ -1,3 +1,9 @@
+name: CICD Pipeline 
+
+on:
+  push:
+    branches: [ "main" ]
+
 jobs:
   build:
     runs-on: self-hosted
@@ -10,9 +16,10 @@ jobs:
 
       # ---------- SonarQube Static Analysis ----------
       - name: Debug SONAR_TOKEN (TEMP)
-        run: echo "Token length: ${#SONAR_TOKEN}"
+        run: echo "SONAR_TOKEN is set"
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0

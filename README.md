@@ -84,7 +84,7 @@ The entire CI/CD pipeline is automated using GitHub Actions and Argo CD:
      * Runs SonarQube analysis using `sonar-project.properties`
   5. **Docker Build & Push**:
 
-     * Builds Docker images and pushes to Docker Hub: `dhruvpatil56/qr-backend` and `dhruvpatil56/qr-frontend`
+     * Builds Docker images and pushes to Docker Hub: `YOUR_USERNAME/qr-backend` and `YOUR_USERNAME/qr-frontend`
   6. **Argo CD Sync**:
 
      * Syncs the GitHub repo with the Kubernetes cluster for GitOps deployment
@@ -129,7 +129,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dhruvpatil56/QR-CODE.git
+    repoURL: https://github.com/YOUR_USERNAME/QR-CODE.git
     targetRevision: HEAD
     path: .
   destination:
@@ -169,11 +169,11 @@ Example Build Commands:
 ```bash
 # Build and tag backend image
 cd api
-docker build -t dhruvpatil56/qr-backend:latest .
+docker build -t yourusername/qr-backend:latest .
 
 # Build and tag frontend image
 cd ../front-end-nextjs
-docker build -t dhruvpatil56/qr-frontend:latest .
+docker build -t yourusername/qr-frontend:latest .
 ```
 
 ---

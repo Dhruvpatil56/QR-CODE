@@ -4,7 +4,7 @@ This project is a full-stack DevOps sample application that allows users to gene
 
 ---
 
-## 🧩 Application Overview
+## 🧹 Application Overview
 
 ### Front-End (Next.js)
 
@@ -82,9 +82,20 @@ The entire CI/CD pipeline is automated using GitHub Actions and Argo CD:
   4. **Quality Gate**:
 
      * Runs SonarQube analysis using `sonar-project.properties`
+     * Requires the following secrets:
+
+       * `SONAR_HOST_URL`: URL of the SonarQube server
+       * `SONAR_TOKEN`: Authentication token for the SonarQube project
   5. **Docker Build & Push**:
 
-     * Builds Docker images and pushes to Docker Hub: `YOUR_USERNAME/qr-backend` and `YOUR_USERNAME/qr-frontend`
+     * Builds Docker images and pushes to Docker Hub:
+
+       * `YOUR_USERNAME/qr-backend`
+       * `YOUR_USERNAME/qr-frontend`
+     * Requires the following secrets:
+
+       * `DOCKER_USERNAME`: Your Docker Hub username
+       * `DOCKER_PASSWORD`: Your Docker Hub password or token
   6. **Argo CD Sync**:
 
      * Syncs the GitHub repo with the Kubernetes cluster for GitOps deployment
@@ -197,11 +208,27 @@ BUCKET_NAME=your-s3-bucket
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+In GitHub repo settings, define the following **Secrets** for CI/CD to work:
+
+```
+SONAR_HOST_URL=<your-sonarqube-url>
+SONAR_TOKEN=<your-sonarqube-token>
+DOCKER_USERNAME=<your-docker-username>
+DOCKER_PASSWORD=<your-docker-password>
+```
+
 ---
 
 ## 🙌 Contributors
 
 * [Dhruv Patil](https://github.com/dhruvpatil56) — DevOps Engineer
 
-> This project is built as a part of DevOps Capstone, demonstrating end-to-end CI/CD, containerization, orchestration, and cloud-native deployment. 🎯
+---
 
+## 📬 Feedback & Contributions
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+> This project is built as a part of DevOps Capstone, demonstrating end-to-end CI/CD, containerization, orchestration, and cloud-native deployment. 🎯

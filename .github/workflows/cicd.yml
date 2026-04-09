@@ -7,20 +7,16 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+
     env:
       DOCKERHUB_USERNAME: dhruvpatil56
+      IMAGE_TAG: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # ---------- SonarQube Static Analysis ----------
-      - name: Debug SONAR_TOKEN (TEMP)
-        run: echo "SONAR_TOKEN is set"
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-
+      # ---------- SonarQube ----------
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         with:
@@ -29,42 +25,49 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      # ---------- Trivy Security Scan ----------
+      # ---------- Trivy ----------
       - name: Install Trivy
         run: |
+          sudo apt-get update
           sudo apt-get install wget apt-transport-https gnupg lsb-release -y
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
           echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update && sudo apt-get install trivy -y
+          sudo apt-get update
+          sudo apt-get install trivy -y
 
-      - name: Run Trivy Filesystem Scan
+      - name: Run Trivy Scan
         run: trivy fs . --exit-code 0 --format table --output trivy-report.txt
 
-      # ---------- Docker Build & Push ----------
+      # ---------- Docker Login ----------
       - name: Login to DockerHub
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
+      # ---------- Backend Build ----------
       - name: Build and Push Backend Docker Image
         run: |
-          docker build -f api/Dockerfile -t $DOCKERHUB_USERNAME/qr-backend:latest ./api
-          docker push $DOCKERHUB_USERNAME/qr-backend:latest
+          docker build -f api/Dockerfile -t $DOCKERHUB_USERNAME/qr-backend:$IMAGE_TAG ./api
+          docker push $DOCKERHUB_USERNAME/qr-backend:$IMAGE_TAG
 
+      # ---------- Frontend Build ----------
       - name: Build and Push Frontend Docker Image
         run: |
-          docker build -f front-end-nextjs/Dockerfile -t $DOCKERHUB_USERNAME/qr-frontend:latest ./front-end-nextjs
-          docker push $DOCKERHUB_USERNAME/qr-frontend:latest
+          docker build -f front-end-nextjs/Dockerfile -t $DOCKERHUB_USERNAME/qr-frontend:$IMAGE_TAG ./front-end-nextjs
+          docker push $DOCKERHUB_USERNAME/qr-frontend:$IMAGE_TAG
 
-      # ---------- Local Container Run (Optional for Dev only) ----------
-      - name: Stop Existing Containers (Dev Only)
-        if: false
+      # ---------- GitOps: Update K8s ----------
+      - name: Update Kubernetes Manifests
         run: |
-          docker rm -f qr-backend || true
-          docker rm -f qr-frontend || true
+          sed -i "s|image: dhruvpatil56/qr-backend:.*|image: dhruvpatil56/qr-backend:${IMAGE_TAG}|g" k8s/backend-deployment.yaml
+          sed -i "s|image: dhruvpatil56/qr-frontend:.*|image: dhruvpatil56/qr-frontend:${IMAGE_TAG}|g" k8s/frontend-deployment.yaml
 
-      - name: Run Backend Locally (Dev Only)
-        if: false
-        run: docker run -d --name qr-backend -p 8000:8000 $DOCKERHUB_USERNAME/qr-backend:latest
+      # ---------- Commit & Push using GitHub Token ----------
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "dhruvpatil56"
+          git config --global user.email "dhruvpatil56@gmail.com"
 
-      - name: Run Frontend Locally (Dev Only)
-        if: false
-        run: docker run -d --name qr-frontend -p 3000:3000 $DOCKERHUB_USERNAME/qr-frontend:latest
+          git add k8s/
+          git commit -m "Update image tag to $IMAGE_TAG" || echo "No changes to commit"
+
+          git remote set-url origin https://x-access-token:${{ secrets.TOKEN }}@github.com/dhruvpatil56/${{ github.event.repository.name }}.git
+          git push origin main

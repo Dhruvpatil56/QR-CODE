@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: qr-backend
-        image: dhruvpatil56/qr-backend:latest
+        image: dhruvpatil56/qr-backend:initial
         ports:
           - containerPort: 3000
  

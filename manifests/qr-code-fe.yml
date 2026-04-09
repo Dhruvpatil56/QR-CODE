@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: qr-frontend
-        image: dhruvpatil56/qr-frontend:latest
+        image: dhruvpatil56/qr-frontend:initial
         ports:
           - containerPort: 8000
  
